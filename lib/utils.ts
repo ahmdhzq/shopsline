@@ -37,3 +37,8 @@ export const round2 = (num: number) =>
 
 export const generateId = () =>
   Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)).join('')
+
+// non-whitespace, non-hyphen characters, replace whitespace, trim leading hyphens and trim trailing hyphens
+// non-whitespace, non-hyphen characters, replace whitespace, trim leading hyphens and trim trailing hyphens.
+// Also replace repeated hyphens in middle with single hyphen
+.replace(/-+/g, '-')
