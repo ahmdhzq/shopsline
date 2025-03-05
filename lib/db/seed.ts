@@ -1,6 +1,7 @@
 import data from '@/lib/data'
 import { connectToDatabase } from '.'
 import Product from './models/product.model'
+import User from './models/user.model'
 import { cwd } from 'process'
 import { loadEnvConfig } from '@next/env'
 
@@ -8,14 +9,20 @@ loadEnvConfig(cwd())
 
 const main = async () => {
     try {
-        const { products } = data
+        const { products, users } = data
         await connectToDatabase(process.env.MONGODB_URI)
 
+        // Hapus data lama
         await Product.deleteMany()
+        await User.deleteMany()
+
+        // Masukkan data baru
         const createdProducts = await Product.insertMany(products)
+        const createdUsers = await User.insertMany(users)
 
         console.log({
             createdProducts,
+            createdUsers,
             message: 'Seeded database successfully',
         })
         process.exit(0)
