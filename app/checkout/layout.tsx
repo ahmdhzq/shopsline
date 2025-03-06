@@ -34,7 +34,9 @@ export default function CheckoutLayout({
                     </div>
                 </div>
             </header>
-            {children}
+            <div className='mx-4'>
+                {children}
+            </div>
         </div>
     )
 }
