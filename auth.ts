@@ -1,6 +1,7 @@
 import { MongoDBAdapter } from '@auth/mongodb-adapter'
 import bcrypt from 'bcryptjs'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { connectToDatabase } from './lib/db'
 import client from './lib/db/client'
 import User from './lib/db/models/user.model'
@@ -9,7 +10,6 @@ import NextAuth, { type DefaultSession } from 'next-auth'
 import authConfig from './auth.config'
 
 declare module 'next-auth' {
-    // eslint-disable-next-line no-unused-vars
     interface Session {
         user: {
             role: string
@@ -32,9 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     providers: [
         CredentialsProvider({
             credentials: {
-                email: {
-                    type: 'email',
-                },
+                email: { type: 'email' },
                 password: { type: 'password' },
             },
             async authorize(credentials) {
@@ -42,7 +40,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 if (credentials == null) return null
 
                 const user = await User.findOne({ email: credentials.email })
-
                 if (user && user.password) {
                     const isMatch = await bcrypt.compare(
                         credentials.password as string,
@@ -60,6 +57,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 return null
             },
         }),
+        GoogleProvider({
+            clientId: process.env.AUTH_GOOGLE_ID as string,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET as string,
+            allowDangerousEmailAccountLinking: true,
+        }),
     ],
     callbacks: {
         jwt: async ({ token, user, trigger, session }) => {
@@ -74,7 +76,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.name = user.name || user.email!.split('@')[0]
                 token.role = (user as { role: string }).role
             }
-
             if (session?.user?.name && trigger === 'update') {
                 token.name = session.user.name
             }
