@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { formatNumberWithDecimal } from './utils'
 
-// Common
+// Common Price validator
 const Price = (field: string) =>
     z.coerce
         .number()
@@ -9,6 +9,8 @@ const Price = (field: string) =>
             (value) => /^\d+(\.\d{2})?$/.test(formatNumberWithDecimal(value)),
             `${field} must have exactly two decimal places (e.g., 49.99)`
         )
+
+// Product validation schema
 export const ProductInputSchema = z.object({
     name: z.string().min(3, 'Name must be at least 3 characters'),
     slug: z.string().min(3, 'Slug must be at least 3 characters'),
@@ -44,7 +46,7 @@ export const ProductInputSchema = z.object({
         .nonnegative('Number of sales must be a non-negative number'),
 })
 
-// Order Item
+// Order Item schema
 export const OrderItemSchema = z.object({
     clientId: z.string().min(1, 'clientId is required'),
     product: z.string().min(1, 'Product is required'),
@@ -65,6 +67,7 @@ export const OrderItemSchema = z.object({
     color: z.string().optional(),
 })
 
+// Shipping Address schema
 export const ShippingAddressSchema = z.object({
     fullName: z.string().min(1, 'Full name is required'),
     street: z.string().min(1, 'Address is required'),
@@ -75,6 +78,7 @@ export const ShippingAddressSchema = z.object({
     country: z.string().min(1, 'Country is required'),
 })
 
+// Cart schema
 export const CartSchema = z.object({
     items: z
         .array(OrderItemSchema)
@@ -89,7 +93,7 @@ export const CartSchema = z.object({
     expectedDeliveryDate: z.optional(z.date()),
 })
 
-// Validation User
+// Validation User schemas
 const UserName = z
     .string()
     .min(2, { message: 'Username must be at least 2 characters' })
@@ -122,7 +126,6 @@ export const UserSignInSchema = z.object({
     password: Password,
 })
 
-// Validation User Password
 export const UserSignUpSchema = UserSignInSchema.extend({
     name: UserName,
     confirmPassword: Password,
@@ -131,4 +134,44 @@ export const UserSignUpSchema = UserSignInSchema.extend({
     path: ['confirmPassword'],
 })
 
+// New: Order Input schema
+const MongoId = z
+    .string()
+    .regex(/^[0-9a-fA-F]{24}$/, { message: 'Invalid MongoDB ID' })
 
+export const OrderInputSchema = z.object({
+    user: z.union([
+        MongoId,
+        z.object({
+            name: z.string(),
+            email: z.string().email(),
+        }),
+    ]),
+    items: z
+        .array(OrderItemSchema)
+        .min(1, 'Order must contain at least one item'),
+    shippingAddress: ShippingAddressSchema,
+    paymentMethod: z.string().min(1, 'Payment method is required'),
+    paymentResult: z
+        .object({
+            id: z.string(),
+            status: z.string(),
+            email_address: z.string(),
+            pricePaid: z.string(),
+        })
+        .optional(),
+    itemsPrice: Price('Items price'),
+    shippingPrice: Price('Shipping price'),
+    taxPrice: Price('Tax price'),
+    totalPrice: Price('Total price'),
+    expectedDeliveryDate: z
+        .date()
+        .refine(
+            (value) => value > new Date(),
+            'Expected delivery date must be in the future'
+        ),
+    isDelivered: z.boolean().default(false),
+    deliveredAt: z.date().optional(),
+    isPaid: z.boolean().default(false),
+    paidAt: z.date().optional(),
+})
