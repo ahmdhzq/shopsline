@@ -3,7 +3,9 @@ import {
     CartSchema,
     OrderItemSchema,
     UserInputSchema, 
-    UserSignInSchema
+    UserSignInSchema,
+    UserSignUpSchema,
+
 } from '@/lib/validator'
 import { z } from 'zod'
 
@@ -27,3 +29,4 @@ export type Data = {
 }
 export type OrderItem = z.infer<typeof OrderItemSchema>
 export type Cart = z.infer<typeof CartSchema>
+export type IUserSignUp = z.infer<typeof UserSignUpSchema>

@@ -38,7 +38,32 @@ export const round2 = (num: number) =>
 export const generateId = () =>
   Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)).join('')
 
-// non-whitespace, non-hyphen characters, replace whitespace, trim leading hyphens and trim trailing hyphens
-// non-whitespace, non-hyphen characters, replace whitespace, trim leading hyphens and trim trailing hyphens.
-// Also replace repeated hyphens in middle with single hyphen
-.replace(/-+/g, '-')
+    // non-whitespace, non-hyphen characters, replace whitespace, trim leading hyphens and trim trailing hyphens
+    // non-whitespace, non-hyphen characters, replace whitespace, trim leading hyphens and trim trailing hyphens.
+    // Also replace repeated hyphens in middle with single hyphen
+    .replace(/-+/g, '-')
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const formatError = (error: any): string => {
+  if (error.name === 'ZodError') {
+    const fieldErrors = Object.keys(error.errors).map((field) => {
+      const errorMessage = error.errors[field].message
+      return `${error.errors[field].path}: ${errorMessage}` // field: errorMessage
+    })
+    return fieldErrors.join('. ')
+  } else if (error.name === 'ValidationError') {
+    const fieldErrors = Object.keys(error.errors).map((field) => {
+      const errorMessage = error.errors[field].message
+      return errorMessage
+    })
+    return fieldErrors.join('. ')
+  } else if (error.code === 11000) {
+    const duplicateField = Object.keys(error.keyValue)[0]
+    return `${duplicateField} already exists`
+  } else {
+    // return 'Something went wrong. please try again'
+    return typeof error.message === 'string'
+      ? error.message
+      : JSON.stringify(error.message)
+  }
+}

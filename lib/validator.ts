@@ -111,3 +111,12 @@ export const UserSignInSchema = z.object({
     email: Email,
     password: Password,
 })
+
+// Validation User Password
+export const UserSignUpSchema = UserSignInSchema.extend({
+    name: UserName,
+    confirmPassword: Password,
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+})
