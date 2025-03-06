@@ -19,12 +19,24 @@ import { redirect, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import ProductPrice from '@/components/shared/product/product-price'
 
+// IMPORT UNTUK STRIPE
+import StripeForm from './stripe-form'
+import { Elements } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+
+// Siapkan publishable key Stripe
+const stripePromise = loadStripe(
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string
+)
+
 export default function OrderPaymentForm({
     order,
     paypalClientId,
+    clientSecret,
 }: {
     order: IOrder
     paypalClientId: string
+    clientSecret?: string | null
     isAdmin: boolean
 }) {
     const router = useRouter()
@@ -39,11 +51,15 @@ export default function OrderPaymentForm({
         expectedDeliveryDate,
         isPaid,
     } = order
+
     const { toast } = useToast()
 
+    // Jika order sudah dibayar, redirect ke halaman detail order
     if (isPaid) {
         redirect(`/account/orders/${order._id}`)
     }
+
+    // Fungsi untuk menampilkan status loading / error PayPal
     function PrintLoadingState() {
         const [{ isPending, isRejected }] = usePayPalScriptReducer()
         let status = ''
@@ -54,15 +70,21 @@ export default function OrderPaymentForm({
         }
         return status
     }
+
+    // Membuat order di PayPal
     const handleCreatePayPalOrder = async () => {
         const res = await createPayPalOrder(order._id)
-        if (!res.success)
-            return toast({
+        if (!res.success) {
+            toast({
                 description: res.message,
                 variant: 'destructive',
             })
+            return
+        }
         return res.data
     }
+
+    // Menangani approval order di PayPal
     const handleApprovePayPalOrder = async (data: { orderID: string }) => {
         const res = await approvePayPalOrder(order._id, data)
         toast({
@@ -71,6 +93,7 @@ export default function OrderPaymentForm({
         })
     }
 
+    // Ringkasan order: menampilkan PayPal atau Stripe (jika belum dibayar)
     const CheckoutSummary = () => (
         <Card>
             <CardContent className='p-4'>
@@ -80,12 +103,11 @@ export default function OrderPaymentForm({
                         <div className='flex justify-between'>
                             <span>Items:</span>
                             <span>
-                                {' '}
                                 <ProductPrice price={itemsPrice} plain />
                             </span>
                         </div>
                         <div className='flex justify-between'>
-                            <span>Shipping & Handling:</span>
+                            <span>Shipping &amp; Handling:</span>
                             <span>
                                 {shippingPrice === undefined ? (
                                     '--'
@@ -97,7 +119,7 @@ export default function OrderPaymentForm({
                             </span>
                         </div>
                         <div className='flex justify-between'>
-                            <span> Tax:</span>
+                            <span>Tax:</span>
                             <span>
                                 {taxPrice === undefined ? (
                                     '--'
@@ -106,14 +128,14 @@ export default function OrderPaymentForm({
                                 )}
                             </span>
                         </div>
-                        <div className='flex justify-between  pt-1 font-bold text-lg'>
-                            <span> Order Total:</span>
+                        <div className='flex justify-between pt-1 font-bold text-lg'>
+                            <span>Order Total:</span>
                             <span>
-                                {' '}
                                 <ProductPrice price={totalPrice} plain />
                             </span>
                         </div>
 
+                        {/* PayPal */}
                         {!isPaid && paymentMethod === 'PayPal' && (
                             <div>
                                 <PayPalScriptProvider options={{ clientId: paypalClientId }}>
@@ -126,6 +148,7 @@ export default function OrderPaymentForm({
                             </div>
                         )}
 
+                        {/* Cash On Delivery */}
                         {!isPaid && paymentMethod === 'Cash On Delivery' && (
                             <Button
                                 className='w-full rounded-full'
@@ -133,6 +156,21 @@ export default function OrderPaymentForm({
                             >
                                 View Order
                             </Button>
+                        )}
+
+                        {/* Stripe */}
+                        {!isPaid && paymentMethod === 'Stripe' && clientSecret && (
+                            <Elements
+                                options={{
+                                    clientSecret,
+                                }}
+                                stripe={stripePromise}
+                            >
+                                <StripeForm
+                                    priceInCents={Math.round(totalPrice * 100)}
+                                    orderId={order._id}
+                                />
+                            </Elements>
                         )}
                     </div>
                 </div>
@@ -160,7 +198,7 @@ export default function OrderPaymentForm({
                         </div>
                     </div>
 
-                    {/* payment method */}
+                    {/* Payment method */}
                     <div className='border-y'>
                         <div className='grid md:grid-cols-3 my-3 pb-3'>
                             <div className='text-lg font-bold'>
@@ -178,8 +216,7 @@ export default function OrderPaymentForm({
                         </div>
                         <div className='col-span-2'>
                             <p>
-                                Delivery date:
-                                {formatDateTime(expectedDeliveryDate).dateOnly}
+                                Delivery date: {formatDateTime(expectedDeliveryDate).dateOnly}
                             </p>
                             <ul>
                                 {items.map((item) => (
