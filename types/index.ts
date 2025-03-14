@@ -56,3 +56,13 @@ export type IReviewDetails = IReviewInput & {
         name: string
     }
 }
+
+// Types for admin dashboard
+export type IOrderList = IOrderInput & {
+    _id: string
+    user: {
+      name: string
+      email: string
+    }
+    createdAt: Date
+}
