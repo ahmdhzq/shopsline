@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { APP_DESCRIPTION, APP_NAME, APP_SLOGAN } from '@/lib/constants'
-import { Toaster } from 'sonner'
+import { APP_DESCRIPTION, APP_NAME, APP_SLOGAN } from '@/lib/constants';
+import { Toaster } from 'sonner';
+import { ColorProvider } from '@/components/shared/color-provider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,20 +21,20 @@ export const metadata: Metadata = {
     default: `${APP_NAME}. ${APP_SLOGAN}`,
   },
   description: APP_DESCRIPTION,
-}
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-        <Toaster />
+    <html lang='en' suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ColorProvider attribute="class" defaultTheme="system">
+          {children}
+          <Toaster />
+        </ColorProvider>
       </body>
     </html>
   );
