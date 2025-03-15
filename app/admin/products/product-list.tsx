@@ -30,6 +30,7 @@ type ProductListDataProps = {
     to: number
     from: number
 }
+
 const ProductList = () => {
     const [page, setPage] = useState<number>(1)
     const [inputValue, setInputValue] = useState<string>('')
@@ -38,11 +39,7 @@ const ProductList = () => {
 
     const handlePageChange = (changeType: 'next' | 'prev') => {
         const newPage = changeType === 'next' ? page + 1 : page - 1
-        if (changeType === 'next') {
-            setPage(newPage)
-        } else {
-            setPage(newPage)
-        }
+        setPage(newPage)
         startTransition(async () => {
             const data = await getAllProductsForAdmin({
                 query: inputValue,
@@ -70,6 +67,7 @@ const ProductList = () => {
             })
         }
     }
+
     useEffect(() => {
         startTransition(async () => {
             const data = await getAllProductsForAdmin({ query: '' })
@@ -79,19 +77,18 @@ const ProductList = () => {
 
     return (
         <div>
-            <div className='space-y-2'>
-                <div className='flex-between flex-wrap gap-2'>
-                    <div className='flex flex-wrap items-center gap-2 '>
-                        <h1 className='font-bold text-lg'>Products</h1>
-                        <div className='flex flex-wrap items-center  gap-2 '>
+            <div className="space-y-2">
+                <div className="flex-between flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h1 className="font-bold text-lg">Products</h1>
+                        <div className="flex flex-wrap items-center gap-2">
                             <Input
-                                className='w-auto'
-                                type='text '
+                                className="w-auto"
+                                type="text"
                                 value={inputValue}
                                 onChange={handleInputChange}
-                                placeholder='Filter name...'
+                                placeholder="Filter name..."
                             />
-
                             {isPending ? (
                                 <p>Loading...</p>
                             ) : (
@@ -105,23 +102,24 @@ const ProductList = () => {
                         </div>
                     </div>
 
-                    <Button asChild variant='default'>
-                        <Link href='/admin/products/create'>Create Product</Link>
+                    <Button asChild variant="default">
+                        <Link href="/admin/products/create">Create Product</Link>
                     </Button>
                 </div>
+
                 <div>
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Id</TableHead>
                                 <TableHead>Name</TableHead>
-                                <TableHead className='text-right'>Price</TableHead>
+                                <TableHead className="text-right">Price</TableHead>
                                 <TableHead>Category</TableHead>
                                 <TableHead>Stock</TableHead>
                                 <TableHead>Rating</TableHead>
                                 <TableHead>Published</TableHead>
                                 <TableHead>Last Update</TableHead>
-                                <TableHead className='w-[100px]'>Actions</TableHead>
+                                <TableHead className="w-[100px]">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -133,7 +131,7 @@ const ProductList = () => {
                                             {product.name}
                                         </Link>
                                     </TableCell>
-                                    <TableCell className='text-right'>${product.price}</TableCell>
+                                    <TableCell className="text-right">${product.price}</TableCell>
                                     <TableCell>{product.category}</TableCell>
                                     <TableCell>{product.countInStock}</TableCell>
                                     <TableCell>{product.avgRating}</TableCell>
@@ -141,12 +139,12 @@ const ProductList = () => {
                                     <TableCell>
                                         {formatDateTime(product.updatedAt).dateTime}
                                     </TableCell>
-                                    <TableCell className='flex gap-1'>
-                                        <Button asChild variant='outline' size='sm'>
+                                    <TableCell className="flex gap-1">
+                                        <Button asChild variant="outline" size="sm">
                                             <Link href={`/admin/products/${product._id}`}>Edit</Link>
                                         </Button>
-                                        <Button asChild variant='outline' size='sm'>
-                                            <Link target='_blank' href={`/product/${product.slug}`}>
+                                        <Button asChild variant="outline" size="sm">
+                                            <Link target="_blank" href={`/product/${product.slug}`}>
                                                 View
                                             </Link>
                                         </Button>
@@ -168,23 +166,23 @@ const ProductList = () => {
                         </TableBody>
                     </Table>
                     {(data?.totalPages ?? 0) > 1 && (
-                        <div className='flex items-center gap-2'>
+                        <div className="flex items-center gap-2">
                             <Button
-                                variant='outline'
+                                variant="outline"
                                 onClick={() => handlePageChange('prev')}
                                 disabled={Number(page) <= 1}
-                                className='w-24'
+                                className="w-24"
                             >
-                                <ChevronLeft /> Previous
+                                <ChevronLeft className="mr-1" /> Previous
                             </Button>
                             Page {page} of {data?.totalPages}
                             <Button
-                                variant='outline'
+                                variant="outline"
                                 onClick={() => handlePageChange('next')}
                                 disabled={Number(page) >= (data?.totalPages ?? 0)}
-                                className='w-24'
+                                className="w-24"
                             >
-                                Next <ChevronRight />
+                                Next <ChevronRight className="ml-1" />
                             </Button>
                         </div>
                     )}
