@@ -216,5 +216,5 @@ export const WebPageInputSchema = z.object({
 })
 
 export const WebPageUpdateSchema = WebPageInputSchema.extend({
-    _id: z.string(),
+    _id: z.string().optional(),
 })
