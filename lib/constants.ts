@@ -55,3 +55,5 @@ export const SERVER_URL =
 
 export const SENDER_EMAIL = process.env.SENDER_EMAIL || 'ahmadhaziq1801@gmail.com'
 export const SENDER_NAME = process.env.SENDER_NAME || APP_NAME
+
+export const USER_ROLES = ['Admin', 'User']
