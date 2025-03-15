@@ -9,6 +9,7 @@ import {
     OrderInputSchema,
     ReviewInputSchema,
     UserNameSchema,
+    WebPageInputSchema,
 } from '@/lib/validator'
 import { z } from 'zod'
 
@@ -32,7 +33,8 @@ export type Data = {
         title: string
         rating: number
         comment: string
-    }[]
+    }[],
+    webPages: IWebPageInput[]
 }
 
 // Types for User
@@ -66,3 +68,5 @@ export type IOrderList = IOrderInput & {
     }
     createdAt: Date
 }
+// webpage
+export type IWebPageInput = z.infer<typeof WebPageInputSchema>

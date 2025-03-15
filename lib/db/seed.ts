@@ -5,19 +5,22 @@ import User from './models/user.model'
 import Review from './models/review.model'
 import { cwd } from 'process'
 import { loadEnvConfig } from '@next/env'
+import WebPage from './models/web-page.model'
 
 loadEnvConfig(cwd())
 
 const main = async () => {
     try {
         // Ambil data dari file data.ts, termasuk products, users, dan reviews
-        const { products, users, reviews } = data
+        const { products, users, reviews, webPages } = data
         await connectToDatabase(process.env.MONGODB_URI)
 
         // Hapus data lama
         await Product.deleteMany()
         await User.deleteMany()
         await Review.deleteMany()
+        await WebPage.deleteMany()
+        await WebPage.insertMany(webPages)
 
         // Masukkan data produk dan user baru
         const createdProducts = await Product.insertMany(products)
